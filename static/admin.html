@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UIDAI | Admin Console</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700&family=Inter:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+
+    <!-- Login Overlay -->
+    <div id="loginOverlay" class="login-overlay">
+        <div class="glass-card" style="width: 400px; text-align: center;">
+            <img src="https://upload.wikimedia.org/wikipedia/en/thumb/c/cf/Aadhaar_Logo.svg/1200px-Aadhaar_Logo.svg.png"
+                width="100" style="margin-bottom: 20px;">
+            <h3>Admin Login</h3>
+            <p style="color: #666; margin-bottom: 20px;">Restricted Access</p>
+            <form onsubmit="adminLogin(event)">
+                <div class="form-group">
+                    <input type="text" id="admin_user" placeholder="Username (e.g. admin_delhi_110001)" required>
+                </div>
+                <div class="form-group">
+                    <input type="password" id="admin_pass" placeholder="Password" required>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Secure Login</button>
+            </form>
+            <p style="margin-top: 15px; font-size: 0.8rem; color: #888;">Demo Password: admin123</p>
+        </div>
+    </div>
+
+    <!-- Main Dashboard (Hidden until login) -->
+    <div id="adminDashboard" style="display: none;">
+
+        <header>
+            <div class="container header-row">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <img src="https://upload.wikimedia.org/wikipedia/en/thumb/c/cf/Aadhaar_Logo.svg/1200px-Aadhaar_Logo.svg.png"
+                        alt="Aadhaar Logo" class="logo">
+                    <div>
+                        <h2 style="font-size: 1.2rem; color: var(--primary);">Admin Console</h2>
+                        <span id="regionBadge" class="badge badge-warning">Region: Loading...</span>
+                    </div>
+                </div>
+                <button onclick="logout()" class="btn" style="padding: 8px 16px; font-size: 0.9rem;">Logout</button>
+            </div>
+        </header>
+
+        <main class="container" style="padding-top: 30px;">
+
+            <!-- Stats Row -->
+            <div class="stat-grid">
+                <div class="stat-box">
+                    <h4 style="color: #7f8c8d;">Total Requests</h4>
+                    <div class="stat-value" id="total_req"
+                        style="font-size: 2rem; font-weight: bold; color: var(--primary);">0</div>
+                </div>
+                <div class="stat-box">
+                    <h4 style="color: #7f8c8d;">Scheduled Today</h4>
+                    <div class="stat-value" id="today_req"
+                        style="font-size: 2rem; font-weight: bold; color: var(--accent);">0</div>
+                </div>
+                <div class="stat-box">
+                    <h4 style="color: #7f8c8d;">System Actions</h4>
+                    <div class="stat-value" id="redirects"
+                        style="font-size: 2rem; font-weight: bold; color: var(--success);">0</div>
+                    <span style="font-size: 0.8rem;">Auto-redirects/SMS</span>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 3fr 1fr; gap: 30px;">
+
+                <!-- Data Table Section -->
+                <div class="panel">
+                    <div style="display: flex; justify-content: space-between; align-items: center; mb-4">
+                        <h3>📋 Citizen Data & Progress</h3>
+
+                        <!-- Filters -->
+                        <div style="display: flex; gap: 10px;">
+                            <select id="filter_age" onchange="loadAdminData()" style="padding: 8px; width: 150px;">
+                                <option value="All">All Ages</option>
+                                <option>Child (0-18)</option>
+                                <option>Adult (18-60)</option>
+                                <option>Senior (60+)</option>
+                            </select>
+                            <select id="filter_status" onchange="loadAdminData()" style="padding: 8px; width: 150px;">
+                                <option value="All">All Status</option>
+                                <option value="Pending">Pending (Future)</option>
+                                <option value="Done">Completed</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div style="overflow-x: auto;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Req ID</th>
+                                    <th>Name</th>
+                                    <th>Age Group</th>
+                                    <th>Assigned Center</th>
+                                    <th>Date/Time</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="logsTableBody">
+                                <!-- Populated by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Controls -->
+                <div class="glass-card" style="padding: 20px; height: fit-content;">
+                    <h3 style="margin-bottom: 20px;">⚡ Quick Actions</h3>
+
+                    <label style="display: block; margin-bottom: 5px; font-weight: bold;">Redistribute Load</label>
+                    <p style="font-size: 0.85rem; color: #666; margin-bottom: 10px;">Shift excess appointments to
+                        tomorrow.</p>
+                    <select id="centerSelect" style="margin-bottom: 10px;"></select>
+                    <button onclick="triggerRedistribution()" class="btn btn-accent"
+                        style="width: 100%; margin-bottom: 20px;">Shift Load</button>
+
+                    <label style="display: block; margin-bottom: 5px; font-weight: bold;">System Health</label>
+                    <button onclick="triggerNetworkFailure()" class="btn"
+                        style="width: 100%; background: #fee; color: var(--error); border: 1px solid var(--error);">Simulate
+                        Outage</button>
+
+                    <button onclick="resetSystem()" class="btn"
+                        style="width: 100%; margin-top: 40px; background: #eee; color: #333;">Factory Reset</button>
+                </div>
+
+            </div>
+
+        </main>
+    </div>
+
+    <div id="toast" class="toast">SMS Sent Successfully</div>
+
+    <script src="script.js"></script>
+    <script>
+        // Check session on load
+        window.onload = function () {
+            checkAuth();
+            loadCentersForAdmin(); // For the dropdown
+        };
+    </script>
+</body>
+
+</html>

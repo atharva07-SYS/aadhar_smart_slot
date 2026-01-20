@@ -1,0 +1,9 @@
+center_id,name,city,pincode,capacity_per_hour
+ASK001,ASK Delhi - Connaught Place,New Delhi,110001,50
+ASK002,ASK Delhi - Laxmi Nagar,New Delhi,110092,40
+ASK003,ASK Noida - Sector 18,Noida,201301,30
+ASK004,ASK Ghaziabad - Raj Nagar,Ghaziabad,201002,25
+ASK005,ASK Gurugram - Cyber Hub,Gurugram,122002,60
+ASK006,ASK Mumbai - Dadar,Mumbai,400014,80
+ASK007,ASK Mumbai - Andheri,Mumbai,400053,70
+ASK008,ASK Bengaluru - Indiranagar,Bengaluru,560038,45

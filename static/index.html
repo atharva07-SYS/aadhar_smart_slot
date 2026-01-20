@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UIDAI | Aadhaar Service Portal</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Google Fonts for Premium Feel -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700&family=Inter:wght@400;500;600&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+
+    <header>
+        <div class="container header-row">
+            <img src="https://upload.wikimedia.org/wikipedia/en/thumb/c/cf/Aadhaar_Logo.svg/1200px-Aadhaar_Logo.svg.png"
+                alt="Aadhaar Logo" class="logo">
+            <h2 style="font-size: 1.2rem; color: #555;">Citizen Service Portal</h2>
+        </div>
+    </header>
+
+    <main class="container" style="flex: 1; display: flex; flex-direction: column; gap: 40px; padding-top: 40px;">
+
+        <!-- Hero Text -->
+        <div style="text-align: center; margin-bottom: 20px;" class="fade-in">
+            <h1 style="font-size: 2.5rem; margin-bottom: 10px;">Book Your Aadhaar Appointment</h1>
+            <p style="color: var(--text-light); font-size: 1.1rem;">Skip the queue. Secure your slot now with our smart
+                scheduling system.</p>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: start;">
+
+            <!-- Booking Form -->
+            <div class="glass-card fade-in" id="bookingSection">
+                <h3 style="margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 10px;">📋 Applicant
+                    Details</h3>
+                <form id="citizenForm" onsubmit="bookAppointment(event)">
+
+                    <div class="form-group">
+                        <label>Full Name</label>
+                        <input type="text" id="name" placeholder="Enter Full Name as per documents" required>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                        <div class="form-group">
+                            <label>Mobile Number</label>
+                            <input type="tel" id="user_phone" placeholder="10-digit Mobile" pattern="[0-9]{10}"
+                                required>
+                        </div>
+                        <div class="form-group">
+                            <label>Age</label>
+                            <input type="number" id="user_age" placeholder="Age" min="1" max="120" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Service Required</label>
+                        <select id="request_type">
+                            <option>New Enrollment</option>
+                            <option>Biometric Update</option>
+                            <option>Demographic Update</option>
+                            <option>eKYC Verification</option>
+                        </select>
+                    </div>
+
+                    <!-- Category Removed as per request (Default: Scheduled) -->
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                        <div class="form-group">
+                            <label>City</label>
+                            <select id="city">
+                                <option>New Delhi</option>
+                                <option>Mumbai</option>
+                                <option>Bengaluru</option>
+                                <option>Noida</option>
+                                <option>Ghaziabad</option>
+                                <option>Gurugram</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Pincode</label>
+                            <input type="text" id="pincode" placeholder="6-digit Pincode" pattern="[0-9]{6}" required>
+                        </div>
+                    </div>
+
+                    <button type="submit" id="submitBtn" class="btn btn-primary"
+                        style="width: 100%; font-size: 1.1rem;">Find & Book Slot</button>
+                </form>
+
+                <!-- Success State -->
+                <div id="successView" style="display: none; text-align: center;">
+                    <div
+                        style="width: 80px; height: 80px; background: #e8f5e9; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px auto;">
+                        <span style="font-size: 40px;">✅</span>
+                    </div>
+                    <h2 style="color: var(--success);">Appointment Confirmed!</h2>
+                    <p style="color: #666; margin-bottom: 20px;">We have sent an SMS to your registered number.</p>
+
+                    <div
+                        style="background: #f8fbff; padding: 20px; border-radius: 12px; text-align: left; border: 1px solid #ddecff;">
+                        <p><strong>Request ID:</strong> <span id="res_id"
+                                style="font-family: monospace; font-size: 1.2rem; color: var(--primary);"></span></p>
+                        <p><strong>Center:</strong> <span id="res_center"></span></p>
+                        <hr style="margin: 10px 0; border: 0; border-top: 1px solid #ddd;">
+                        <div style="display: flex; justify-content: space-between;">
+                            <span>📅 <span id="res_date"></span></span>
+                            <span>⏰ <span id="res_time"></span></span>
+                        </div>
+                    </div>
+                    <button onclick="location.reload()" class="btn btn-accent" style="margin-top: 20px;">Book
+                        Another</button>
+                    <button onclick="downloadSlip()" class="btn"
+                        style="margin-top: 10px; background: white; border: 1px solid #ccc;">Download Slip</button>
+                </div>
+
+            </div>
+
+            <!-- Tracking Section -->
+            <div>
+                <div class="glass-card fade-in" style="margin-bottom: 30px; animation-delay: 0.2s;">
+                    <h3 style="margin-bottom: 15px;">🔍 Track Application</h3>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="text" id="track_req_id" placeholder="Enter Request ID (e.g. REQ123...)"
+                            style="flex: 1;">
+                        <button onclick="trackRequest()" class="btn btn-accent">Track</button>
+                    </div>
+                    <div id="trackResult"
+                        style="margin-top: 15px; display: none; padding: 15px; background: #f4f4f4; border-radius: 8px;">
+                        <!-- JS fills this -->
+                    </div>
+                </div>
+
+                <div class="glass-card fade-in"
+                    style="background: linear-gradient(135deg, #0b1e47 0%, #1a3a7a 100%); color: white; animation-delay: 0.4s;">
+                    <h3 style="color: white; margin-bottom: 10px;">Information</h3>
+                    <ul style="list-style: none; opacity: 0.9; line-height: 1.8;">
+                        <li>✔️ Carry original documents.</li>
+                        <li>✔️ Arrive 15 mins before time.</li>
+                        <li>✔️ Walk-ins subject to availability.</li>
+                    </ul>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <div id="toast" class="toast">Action Successful</div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
