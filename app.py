@@ -7,105 +7,168 @@ from src.backend import CrowdSystemBackend
 
 # --- CONFIG ---
 st.set_page_config(
-    page_title="Citizen Service Portal | UIDAI",
-    page_icon="☀️",
+    page_title="myAadhaar | Government of India",
+    page_icon="🇮🇳",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# --- CUSTOM CSS (V3 Modern Clean) ---
+# --- CUSTOM CSS (Official Premium Gov Theme) ---
 st.markdown("""
     <style>
-    /* Global Background */
+    /* VARIABLES */
+    :root {
+        --primary-red: #B72025; /* Official Aadhaar Red */
+        --primary-yellow: #F3A12F; /* Official Aadhaar Yellow */
+        --primary-navy: #0B1E47; /* Official Navy */
+        --bg-color: #F8F9FA;
+        --card-bg: #FFFFFF;
+        --text-color: #333333;
+    }
+
+    /* GLOBAL */
     .stApp {
-        background-color: #f4f6f8; /* Soft Cloud Gray */
-        color: #1a202c;
+        background-color: var(--bg-color);
+        color: var(--text-color);
     }
     
-    /* Fonts */
-    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+    /* FONTS */
+    @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Hind:wght@400;600&display=swap');
     html, body, [class*="css"] {
-        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-family: 'Roboto', 'Hind', sans-serif;
     }
 
-    /* Modern Cards */
-    .modern-card {
-        background-color: #ffffff;
-        border-radius: 16px;
-        padding: 32px;
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.03), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
-        border: 1px solid rgba(0,0,0,0.02);
-        margin-bottom: 24px;
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    /* GOV TOP STRIP */
+    .gov-strip {
+        background-color: #f1f1f1;
+        color: #666;
+        padding: 5px 20px;
+        font-size: 0.8rem;
+        border-bottom: 1px solid #ddd;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
     }
-    .modern-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.02);
+    .gov-strip strong { color: #000; font-weight: 700; }
+
+    /* HEADER */
+    .brand-header {
+        background: white;
+        padding: 15px 20px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        border-bottom: 4px solid var(--primary-yellow);
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+    .brand-logo { height: 60px; }
+    .brand-title { 
+        color: var(--primary-navy); 
+        font-size: 1.8rem; 
+        font-weight: 700; 
+        line-height: 1.2;
+    }
+    .brand-subtitle {
+        color: var(--primary-red);
+        font-size: 0.9rem;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 1px;
     }
 
-    /* Headings */
-    h1, h2, h3 {
-        color: #0b1e47;
-        font-weight: 700;
-        letter-spacing: -0.02em;
+    /* CARDS (Material minimal) */
+    .gov-card {
+        background: white;
+        border-radius: 8px;
+        padding: 25px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        border: 1px solid #eee;
+        margin-bottom: 20px;
+        transition: box-shadow 0.2s;
     }
-    
-    /* Buttons */
+    .gov-card:hover {
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    /* BUTTONS */
     .stButton>button {
-        background: linear-gradient(135deg, #0b1e47 0%, #1a3675 100%);
+        background-color: var(--primary-navy);
         color: white;
+        border-radius: 4px;
+        height: 45px;
+        padding: 0 25px;
+        font-weight: 500;
+        text-transform: uppercase;
         border: none;
-        border-radius: 10px;
-        height: 50px;
-        font-weight: 600;
-        font-size: 1rem;
-        box-shadow: 0 4px 6px rgba(11, 30, 71, 0.15);
-        transition: all 0.3s ease;
+        transition: background-color 0.2s;
     }
     .stButton>button:hover {
-        background: linear-gradient(135deg, #1a3675 0%, #0b1e47 100%);
-        transform: translateY(-1px);
-        box-shadow: 0 6px 10px rgba(11, 30, 71, 0.25);
+        background-color: var(--primary-red);
+        color: white;
     }
-    
-    /* Secondary Action Button (Gold) */
-    .gold-btn {
-        background-color: #f3a12f !important;
-        color: #0b1e47 !important;
+    .secondary-btn>button {
+        background-color: white;
+        color: var(--primary-navy);
+        border: 2px solid var(--primary-navy);
     }
 
-    /* Inputs */
-    .stTextInput>div>div>input, .stSelectbox>div>div>div, .stNumberInput>div>div>input, .stDateInput>div>div>input {
-        background-color: #ffffff !important;
-        color: #1a202c !important;
-        border: 1px solid #e2e8f0 !important;
-        border-radius: 10px !important;
-        height: 48px;
-        padding-left: 15px;
+    /* INPUTS */
+    .stTextInput>div>div>input, .stSelectbox>div>div>div, .stNumberInput>div>div>input {
+        border-radius: 4px !important;
+        border: 1px solid #ccc !important;
+        background-color: #fff !important;
+        color: #333 !important;
     }
     .stTextInput>div>div>input:focus {
-        border-color: #0b1e47 !important;
-        box-shadow: 0 0 0 3px rgba(11, 30, 71, 0.1);
-    }
-
-    /* Sidebar */
-    [data-testid="stSidebar"] {
-        background-color: #ffffff;
-        border-right: 1px solid #f1f1f1;
+        border-color: var(--primary-navy) !important;
+        box-shadow: 0 0 0 2px rgba(11,30,71,0.1);
     }
     
-    /* Metrics */
-    .stat-box {
-        background: #fff;
-        border-radius: 12px;
-        padding: 20px;
-        border: 1px solid #eff0f6;
+    /* SIDEBAR */
+    [data-testid="stSidebar"] {
+        background-color: white;
+        border-right: 1px solid #eee;
+    }
+    
+    /* FOOTER */
+    .gov-footer {
+        background-color: var(--primary-navy);
+        color: white;
+        padding: 40px 20px;
+        margin-top: 50px;
+        font-size: 0.9rem;
         text-align: center;
     }
-    .stat-label { color: #6e7c89; font-size: 0.85rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
-    .stat-val { color: #0b1e47; font-size: 2.2rem; font-weight: 800; margin: 5px 0; }
+    .gov-footer a { color: #ccc; text-decoration: none; margin: 0 10px; }
     
+    /* STATUS BADGES */
+    .badge { padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; }
+    .badge-success { background: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9; }
+    .badge-warning { background: #fff3e0; color: #ef6c00; border: 1px solid #ffe0b2; }
+
     </style>
+""", unsafe_allow_html=True)
+
+# --- ASSETS ---
+AADHAAR_LOGO_URL = "https://upload.wikimedia.org/wikipedia/en/c/cf/Aadhaar_Logo.svg" 
+GOV_INDIA_EMBLEM = "https://upload.wikimedia.org/wikipedia/commons/5/55/Emblem_of_India.svg"
+
+# --- LAYOUT HEADER ---
+st.markdown(f"""
+    <div class='gov-strip'>
+        <div><strong>GOVERNMENT OF INDIA</strong></div>
+        <div>Skip to Main Content | <span style='font-size:1.1em'>A+ A-</span> | Language: <b style='color:#333'>English</b></div>
+    </div>
+    <div class='brand-header'>
+        <img src="{GOV_INDIA_EMBLEM}" style="height:55px; opacity:0.8;">
+        <div style="flex-grow:1; border-left:1px solid #ccc; padding-left:15px; margin-left:5px;">
+             <div class='brand-title'>Unique Identification Authority of India</div>
+             <div class='brand-subtitle'>Government of India</div>
+        </div>
+        <img src="{AADHAAR_LOGO_URL}" class='brand-logo'>
+    </div>
+    <div style="height:3px; background:linear-gradient(90deg, #F3A12F 33%, #FFFFFF 33%, #FFFFFF 66%, #138808 66%);"></div>
+    <br>
 """, unsafe_allow_html=True)
 
 # --- BACKEND ---
@@ -115,209 +178,182 @@ def get_backend():
 
 backend = get_backend()
 
-# ================= NAVIGATION =================
-# If Admin Logged In, show full sidebar Dashboard.
-# If Not, show Citizen Portal standard view.
-
+# ================= STATE MANAGEMENT =================
 if 'admin_logged_in' not in st.session_state:
     st.session_state['admin_logged_in'] = False
     st.session_state['admin_region'] = None
 
-# --- ADMIN VIEW ---
+# ================= ADMIN SIDEBAR CONTROLLER =================
 if st.session_state['admin_logged_in']:
     region = st.session_state['admin_region']
-    
-    # Sidebar Navigation
     with st.sidebar:
-        st.write("### ⚙️ Admin Console")
+        st.image(AADHAAR_LOGO_URL, width=150)
+        st.write("### ASK Console")
         st.info(f"📍 **{region}**")
-        nav_opt = st.radio("Navigation", ["📊 Dashboard", "📅 Schedules", "👥 Demographics", "🏗️ Operations"], label_visibility="collapsed")
-        
+        nav = st.radio("Menu", ["Dashboard", "Schedule", "Analytics", "Alerts"], label_visibility="collapsed")
         st.markdown("---")
-        if st.button("Log Out"):
+        if st.button("Secure Logout"):
             st.session_state['admin_logged_in'] = False
             st.rerun()
 
-    # --- DASHBOARD HEADER ---
-    st.title(f"{nav_opt}")
-    st.write(f"Real-time data for **{region}**")
-    st.markdown("---")
-    
-    # Filter Scope
+    # --- ADMIN CONTENT ---
     df = backend.dm.requests.copy().fillna('')
-    # Strict fake scoping for demo using string match
-    scope_df = df[df['input_city'].str.contains(region, case=False) | (df['input_pincode'] == st.session_state.get('admin_pincode', '000000'))]
+    # Simulate strict scope
+    scope_df = df[df['input_city'].str.contains(region, case=False)]
 
-    if nav_opt == "📊 Dashboard":
-        # KPI Cards
-        c1, c2, c3, c4 = st.columns(4)
-        with c1:
-            st.markdown(f"<div class='stat-box'><div class='stat-label'>Total Requests</div><div class='stat-val'>{len(scope_df)}</div></div>", unsafe_allow_html=True)
-        with c2:
-            today_count = len(scope_df[scope_df['assigned_date'] == str(datetime.date.today())])
-            st.markdown(f"<div class='stat-box'><div class='stat-label'>Today's Appointments</div><div class='stat-val'>{today_count}</div></div>", unsafe_allow_html=True)
-        with c3:
-            pending = len(scope_df[scope_df['status'].str.contains("Confirmed")])
-            st.markdown(f"<div class='stat-box'><div class='stat-label'>Pending</div><div class='stat-val' style='color:#f59e0b'>{pending}</div></div>", unsafe_allow_html=True)
-        with c4:
-            done = len(scope_df[scope_df['status'].str.contains("Completed")])
-            st.markdown(f"<div class='stat-box'><div class='stat-label'>Processed</div><div class='stat-val' style='color:#10b981'>{done}</div></div>", unsafe_allow_html=True)
-
+    if nav == "Dashboard":
+        st.subheader("Regional Overview")
+        m1, m2, m3, m4 = st.columns(4)
+        m1.metric("Total Applications", len(scope_df))
+        today = len(scope_df[scope_df['assigned_date'] == str(datetime.date.today())])
+        m2.metric("Today's Appointments", today)
+        pending = len(scope_df[scope_df['status'].str.contains("Confirmed")])
+        m3.metric("Pending Processing", pending)
+        m4.metric("Center Status", "🟢 Online")
+        
         st.write("")
-        st.subheader("📌 Recent Activity")
-        st.dataframe(scope_df[['request_id', 'name', 'phone', 'assigned_date', 'status']].tail(10), use_container_width=True, hide_index=True)
+        st.write("##### 📋 Recent Applications")
+        st.dataframe(scope_df[['request_id', 'name', 'request_type', 'assigned_date', 'status']].tail(8), use_container_width=True, hide_index=True)
 
-    elif nav_opt == "📅 Schedules":
-        st.subheader("Manage Appointments")
-        
-        c_fill1, c_fill2 = st.columns(2)
-        with c_fill1:
-            sel_date = st.date_input("Select Date", value=datetime.date.today())
-        with c_fill2:
-            st.write("") # Spacer
-            if st.button("Print Manifest"):
-                st.toast("Generating PDF Manifest...")
-
-        view_df = scope_df[scope_df['assigned_date'] == str(sel_date)]
-        
-        if view_df.empty:
-            st.info("No appointments scheduled for this date.")
-        else:
-            st.dataframe(view_df[['assigned_time_slot', 'request_id', 'name', 'request_type', 'status']], use_container_width=True, hide_index=True)
-
-    elif nav_opt == "👥 Demographics":
+    elif nav == "Analytics":
+        st.subheader("Demographics Analysis")
         c1, c2 = st.columns(2)
         with c1:
-            st.markdown("<div class='modern-card'>", unsafe_allow_html=True)
-            st.write("**Age Distribution**")
+            st.markdown("<div class='gov-card'><b>Age Group Distribution</b>", unsafe_allow_html=True)
             if not scope_df.empty:
-                fig = px.pie(scope_df, names='age_group', hole=0.4, color_discrete_sequence=px.colors.sequential.RdBu)
+                fig = px.pie(scope_df, names='age_group', color_discrete_sequence=['#B72025', '#F3A12F', '#0B1E47'])
                 st.plotly_chart(fig, use_container_width=True)
             st.markdown("</div>", unsafe_allow_html=True)
-            
         with c2:
-            st.markdown("<div class='modern-card'>", unsafe_allow_html=True)
-            st.write("**Service Types**")
+            st.markdown("<div class='gov-card'><b>Service Requests</b>", unsafe_allow_html=True)
             if not scope_df.empty:
-                fig2 = px.bar(scope_df, x='request_type', color='request_type')
+                fig2 = px.bar(scope_df, x='request_type', color='request_type', color_discrete_sequence=px.colors.qualitative.Prism)
                 st.plotly_chart(fig2, use_container_width=True)
             st.markdown("</div>", unsafe_allow_html=True)
 
-    elif nav_opt == "🏗️ Operations":
+    elif nav == "Alerts":
+        st.subheader("Network & Alerts")
+        st.error("⚠️ EMERGENCY BROADCAST SYSTEM")
         c1, c2 = st.columns(2)
         with c1:
-            st.markdown("<div class='modern-card'>", unsafe_allow_html=True)
-            st.write("#### 🚨 Emergency Controls")
-            st.write("Simulate system outages or crowd surges.")
-            if st.button("TRIGGER SERVER OUTAGE"):
-                with st.spinner("Broadcasting Alerts..."):
+            st.markdown("<div class='gov-card'>", unsafe_allow_html=True)
+            st.write("<b>Report Failure</b>")
+            if st.button("TRIGGER OUTAGE ALERT"):
+                with st.spinner("Notifying Central Command..."):
                     time.sleep(2)
-                st.error("System Status: OUTAGE. SMS Alerts Sent.")
+                st.toast("🚨 ALERT SENT: Regional Outage Reported.")
             st.markdown("</div>", unsafe_allow_html=True)
         with c2:
-            st.markdown("<div class='modern-card'>", unsafe_allow_html=True)
-            st.write("#### 📢 Communications")
-            st.write("Send manual notifications to scheduled citizens.")
-            msg = st.text_input("Message Content", "Please arrive 15 mins early.")
-            if st.button("Send Broadcast"):
-                st.toast(f"Sent: {msg}")
+            st.markdown("<div class='gov-card'>", unsafe_allow_html=True)
+            st.write("<b>Mass Notification</b>")
+            msg = st.text_input("SMS Content")
+            if st.button("Send Blast"):
+                st.success(f"Sent: {msg}")
             st.markdown("</div>", unsafe_allow_html=True)
+            
+    elif nav == "Schedule":
+        st.subheader("Daily Manifest")
+        d = st.date_input("Select Date", datetime.date.today())
+        v_df = scope_df[scope_df['assigned_date'] == str(d)]
+        if v_df.empty: st.info("No appointments.")
+        else: st.dataframe(v_df, use_container_width=True)
 
 
-# --- CITIZEN VIEW (Default) ---
+# ================= CITIZEN VIEW =================
 else:
-    # Sidebar for Citizen too? Maybe just for Admin Toggle
+    # Sidebar for Login Toggle
     with st.sidebar:
-        st.write("### ☀️ Citizen Portal")
-        st.write("Welcome to the Next-Gen Aadhaar Appointment System.")
+        st.image(AADHAAR_LOGO_URL, width=120)
+        st.write("### myAadhaar")
         st.markdown("---")
-        mode = st.radio("Connect As", ["Citizen", "Admin"])
+        role = st.selectbox("Role", ["Citizen", "Official Login"])
         
-        if mode == "Admin":
-            st.markdown("---")
-            st.subheader("Admin Login")
-            with st.form("sidebar_login"):
-                u = st.text_input("ID")
-                p = st.text_input("Key", type="password")
-                if st.form_submit_button("Login"):
-                    if p == "admin123" and u.startswith("admin_"):
-                        parts = u.split('_')
+        if role == "Official Login":
+            with st.form("login_form"):
+                uid = st.text_input("Official ID")
+                pwd = st.text_input("Password", type="password")
+                if st.form_submit_button("LOGIN"):
+                    if pwd == "admin123" and uid.startswith("admin_"):
+                        parts = uid.split('_')
                         st.session_state['admin_logged_in'] = True
                         st.session_state['admin_region'] = parts[1].capitalize()
-                        try:
-                            st.session_state['admin_pincode'] = parts[2]
-                        except:
-                            st.session_state['admin_pincode'] = "000000"
                         st.rerun()
-                    else:
-                        st.error("Invalid Credentials. Use admin_city_pincode")
-            st.caption("Demo: admin_delhi_110001 (admin123)")
+                    else: st.error("Access Denied")
+            st.caption("Demo: admin_delhi_110001 / admin123")
 
-    if not st.session_state['admin_logged_in']:
-        # MAIN LANDING
-        st.markdown("<div style='text-align:center; padding: 40px 0;'>", unsafe_allow_html=True)
-        st.title("Book Your Aadhaar Appointment")
-        st.write("Skip the queue. Secure your slot with our smart AI scheduling.")
-        st.markdown("</div>", unsafe_allow_html=True)
+    # MAIN CONTENT
+    if role == "Citizen":
+        st.markdown("<h2 style='text-align:center; color:#0B1E47'>Book Appointment</h2><br>", unsafe_allow_html=True)
         
-        # Central Container
-        col_main, _ = st.columns([1, 0.01]) # Centered feel
+        c_main, _ = st.columns([1, 0.05])
         
-        st.markdown("<div class='modern-card'>", unsafe_allow_html=True)
-        st.write("### 📝 Application Details")
+        st.markdown("<div class='gov-card'>", unsafe_allow_html=True)
+        st.write("#### 📝 Enrolment / Update Form")
         st.markdown("---")
         
-        with st.form("main_booking"):
+        with st.form("book_form"):
             c1, c2 = st.columns(2)
             with c1:
-                name = st.text_input("Full Name", placeholder="As per documents")
-                phone = st.text_input("Mobile Number", placeholder="10-digit")
-                city = st.selectbox("Location", ["New Delhi", "Mumbai", "Bengaluru", "Noida", "Ghaziabad", "Gurugram"])
-
+                name = st.text_input("Full Name", help="Name as per supporting documents (POI)")
+                phone = st.text_input("Mobile No.", help="10-digit indian mobile number")
+                city = st.selectbox("Preferred City", ["New Delhi", "Mumbai", "Bengaluru", "Noida", "Ghaziabad", "Gurugram"])
+            
             with c2:
-                age = st.number_input("Age", 1, 120)
-                req_type = st.selectbox("Service", ["New Enrollment", "Biometric Update", "Demographic Update", "eKYC"])
-                pincode = st.text_input("Pincode", placeholder="e.g. 110001")
+                age = st.number_input("Age (Years)", 0, 120)
+                service = st.selectbox("Service Required", ["New Enrolment", "Biometric Update", "Demographic Update", "eKYC"])
+                pincode = st.text_input("Area Pincode")
             
-            st.write("")
-            btn_col1, btn_col2 = st.columns([1, 2])
-            with btn_col2:
-                submitted = st.form_submit_button("Find & Book Priority Slot")
-            
-        if submitted:
-            if not name or len(phone)!=10:
-                st.error("Please provide valid details.")
-            else:
-                with st.spinner("🤖 AI Finding Best Slot..."):
-                    time.sleep(1.5)
-                    age_group = "Child (0-18)" if age < 18 else "Adult (18-60)" if age < 60 else "Senior (60+)"
-                    payload = {"name": name, "phone": phone, "age": str(age), "age_group": age_group, "request_type": req_type, "user_type": "Scheduled", "city": city, "pincode": pincode}
-                    
-                    res = backend.process_request(payload)
-                    if res['success']:
-                        d = res['data']
-                        st.balloons()
-                        st.success("✅ Appointment Confirmed!")
-                         # Success Card
-                        st.markdown(f"""
-                        <div style='background:#f0fff4; padding:20px; border-radius:10px; border:1px solid #bbf7d0; margin-top:20px;'>
-                            <h3 style='color:#15803d; margin:0;'>Booking ID: {d['request_id']}</h3>
-                            <p><strong>Center:</strong> {res['center_name']}</p>
-                            <p><strong>Time:</strong> {d['assigned_date']} @ {d['assigned_time_slot']}</p>
-                            <small>SMS sent to {phone}</small>
-                        </div>
-                        """, unsafe_allow_html=True)
-                    else:
-                        st.error(res['message'])
+            st.markdown("<br>", unsafe_allow_html=True)
+            btn_c1, btn_c2 = st.columns([1, 2])
+            with btn_c2:
+                sub = st.form_submit_button("Search & Book Slot")
+                
+            if sub:
+                if not name or len(phone) != 10:
+                    st.error("Please enter valid mandatory details.")
+                else:
+                    with st.spinner("Validating Request..."):
+                        time.sleep(1)
+                        age_grp = "Child (0-18)" if age < 18 else "Adult (18-60)" if age < 60 else "Senior (60+)"
+                        payload = {"name": name, "phone": phone, "age": str(age), "age_group": age_grp, "request_type": service, "user_type": "Scheduled", "city": city, "pincode": pincode}
+                        
+                        res = backend.process_request(payload)
+                        if res['success']:
+                            d = res['data']
+                            st.success("✅ Appointment Successfully Booked")
+                            st.markdown(f"""
+                                <div style='background:#f9f9f9; padding:15px; border-left:4px solid #F3A12F; margin-top:20px;'>
+                                    <div style='font-size:1.2rem; font-weight:bold; color:#0B1E47'>Request ID: {d['request_id']}</div>
+                                    <div>Center: {res['center_name']}</div>
+                                    <div>Slot: {d['assigned_date']} at {d['assigned_time_slot']}</div>
+                                </div>
+                            """, unsafe_allow_html=True)
+                        else:
+                            st.error(res['message'])
         st.markdown("</div>", unsafe_allow_html=True)
         
-        # Track Section (Expander)
-        with st.expander("🔍 Already applied? Track Status"):
-             t_id = st.text_input("Enter Request ID")
-             if st.button("Track"):
-                 match = backend.dm.requests[backend.dm.requests['request_id'] == t_id]
-                 if not match.empty:
-                     r = match.iloc[0]
-                     st.info(f"Status: {r['status']} | Date: {r['assigned_date']}")
-                 else:
-                     st.error("Not Found")
+        with st.expander("🔍 Check Application Status"):
+            ck_id = st.text_input("Enter Enrolment ID (EID) or Request ID")
+            if st.button("Check Status"):
+                match = backend.dm.requests[backend.dm.requests['request_id'] == ck_id]
+                if not match.empty:
+                    r = match.iloc[0]
+                    st.success(f"Current Status: {r['status']}")
+                else: st.warning("Record Not Found")
+
+# --- FOOTER ---
+st.markdown("""
+    <div class='gov-footer'>
+        <div>
+            <a href='#'>Website Policy</a> | 
+            <a href='#'>Terms & Conditions</a> | 
+            <a href='#'>Privacy Policy</a> | 
+            <a href='#'>Hyperlink Policy</a> | 
+            <a href='#'>Copyright Policy</a> | 
+            <a href='#'>Help</a>
+        </div>
+        <br>
+        <div>Content owned by Unique Identification Authority of India</div>
+        <div>© 2026 Government of India</div>
+    </div>
+""", unsafe_allow_html=True)
