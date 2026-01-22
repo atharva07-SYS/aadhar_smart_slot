@@ -2,114 +2,126 @@ import streamlit as st
 import pandas as pd
 import time
 import datetime
+import plotly.express as px  # For professional charts
 from src.backend import CrowdSystemBackend
 
 # --- CONFIG ---
 st.set_page_config(
-    page_title="UIDAI | Aadhaar Service Portal",
+    page_title="Citizen Service Portal | UIDAI",
     page_icon="🇮🇳",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
 
-# --- CUSTOM CSS (Glassmorphism & Premium Theme) ---
+# --- CUSTOM CSS (Official Light Theme) ---
 st.markdown("""
     <style>
     /* Global Background */
     .stApp {
-        background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
-        background-attachment: fixed;
-        color: #ffffff;
+        background-color: #ecf0f3; /* Light Professional Gray */
+        color: #0b1e47;
     }
     
     /* Fonts */
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
     html, body, [class*="css"] {
-        font-family: 'Inter', sans-serif;
+        font-family: 'Roboto', sans-serif;
     }
 
-    /* Glassmorphism Containers */
-    .glass-card {
-        background: rgba(255, 255, 255, 0.05);
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 16px;
-        padding: 24px;
-        margin-bottom: 20px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    /* Professional White Cards */
+    .prof-card {
+        background-color: #ffffff;
+        border-radius: 12px;
+        padding: 30px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        border-top: 5px solid #f3a12f; /* Aadhaar Gold */
+        margin-bottom: 25px;
+        transition: transform 0.2s ease;
     }
-    .glass-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-        border-color: rgba(255, 255, 255, 0.3);
+    .prof-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
     }
 
     /* Headings */
     h1, h2, h3 {
-        color: #f0f0f0 !important;
-        font-weight: 600;
+        color: #0b1e47 !important;
+        font-weight: 700;
+        letter-spacing: -0.5px;
     }
-    .main_header {
-        font-family: 'Inter', sans-serif;
-        background: linear-gradient(90deg, #d4a017, #f6d365);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
+    .main-title {
+        color: #0b1e47;
+        font-size: 3rem;
+        font-weight: 800;
         text-align: center;
-        padding-bottom: 20px;
-        border-bottom: 1px solid rgba(255,255,255,0.1);
-        margin-bottom: 30px;
-        font-size: 2.5rem;
+        margin-top: 20px;
     }
-
-    /* Input Fields */
-    .stTextInput>div>div>input, .stSelectbox>div>div>div, .stNumberInput>div>div>input {
-        background-color: rgba(255, 255, 255, 0.07) !important;
-        color: #fff !important;
-        border: 1px solid rgba(255, 255, 255, 0.1) !important;
-        border-radius: 8px !important;
-    }
-    .stTextInput>div>div>input:focus, .stSelectbox>div>div>div:focus {
-        border-color: #d4a017 !important;
-        box-shadow: 0 0 10px rgba(212, 160, 23, 0.3);
+    .sub-title {
+        color: #7b8a8b;
+        text-align: center;
+        font-size: 1.2rem;
+        margin-bottom: 40px;
     }
 
     /* Buttons */
     .stButton>button {
-        background: linear-gradient(90deg, #d4a017 0%, #aa8012 100%);
-        color: white;
+        background-color: #f3a12f; /* Gold */
+        color: #0b1e47;
         border: none;
-        border-radius: 8px;
-        height: 50px;
-        font-weight: 600;
-        font-size: 1rem;
+        border-radius: 6px;
+        height: 48px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
         width: 100%;
-        transition: all 0.3s ease;
+        transition: background-color 0.3s;
     }
     .stButton>button:hover {
-        transform: scale(1.02);
-        box-shadow: 0 0 15px rgba(212, 160, 23, 0.5);
+        background-color: #d48e2a;
+        color: #fff;
     }
 
-    /* Status Badges */
-    .status-badge {
-        display: inline-block;
-        padding: 5px 12px;
-        border-radius: 20px;
-        font-size: 0.85rem;
-        font-weight: 600;
+    /* Inputs */
+    .stTextInput>div>div>input, .stSelectbox>div>div>div, .stNumberInput>div>div>input {
+        background-color: #f8f9fa !important;
+        color: #333 !important;
+        border: 1px solid #dee2e6 !important;
+        border-radius: 6px !important;
+        height: 45px;
     }
-    .status-green { background-color: rgba(76, 175, 80, 0.2); color: #81c784; border: 1px solid #4caf50; }
-    .status-orange { background-color: rgba(255, 152, 0, 0.2); color: #ffb74d; border: 1px solid #ff9800; }
+    .stTextInput>div>div>input:focus {
+        border-color: #0b1e47 !important;
+        box-shadow: none;
+    }
+
+    /* Notifications */
+    .notification-box {
+        padding: 15px;
+        background-color: #e8f5e9;
+        border-left: 5px solid #2e7d32;
+        color: #1b5e20;
+        font-weight: 500;
+        margin-top: 10px;
+        border-radius: 4px;
+    }
     
-    /* Animations */
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(10px); }
-        to { opacity: 1; transform: translateY(0); }
+    /* Metrics */
+    .metric-container {
+        text-align: center;
+        padding: 20px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        border: 1px solid #eee;
     }
-    .animate-fade-in {
-        animation: fadeIn 0.8s ease-out forwards;
+    .metric-value {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #0b1e47;
+    }
+    .metric-label {
+        color: #666;
+        font-size: 0.9rem;
+        text-transform: uppercase;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -121,47 +133,61 @@ def get_backend():
 
 backend = get_backend()
 
-# --- HEADER ---
-st.markdown("<div class='animate-fade-in'><h1 class='main_header'>UIDAI Aadhaar Appointment & Crowd Management System</h1></div>", unsafe_allow_html=True)
+# --- HEADER LOGO & TITLE ---
+# Using a text representation for logo place to keep it clean if image not available, 
+# but styling it like the header in the image.
+c1, c2 = st.columns([1, 10])
+with c1:
+    st.markdown("<h1>☀️</h1>", unsafe_allow_html=True) # Placeholder for Aadhaar Logo
+with c2:
+    st.markdown("<div style='text-align:right; font-weight:bold; color:#0b1e47; padding-top:20px;'>Citizen Service Portal</div>", unsafe_allow_html=True)
+
+st.markdown("<h1 class='main-title'>Book Your Aadhaar Appointment</h1>", unsafe_allow_html=True)
+st.markdown("<p class='sub-title'>Skip the queue. Secure your slot now with our smart scheduling system.</p>", unsafe_allow_html=True)
 
 # --- TABS ---
-# Custom stylable tabs (Streamlit native tabs are hard to style heavily, keeping default but consistent)
-tab_citizen, tab_admin = st.tabs(["👤 Citizen Services", "🔒 Admin Console"])
+# To keep professional look, we use invisible tabs or custom switcher? 
+# Standard tabs are fine if styled, but let's stick to the separation required.
+tab_citizen, tab_admin = st.tabs(["🏛️ Citizen Services", "⚙️ Admin Dashboard"])
 
-# ================= CITIZEN TAB =================
+# ================= CITIZEN PORTAL =================
 with tab_citizen:
-    st.markdown("<div class='glass-card animate-fade-in'>", unsafe_allow_html=True)
-    menu = st.radio("", ["Book Priority Appointment", "Track Application Status"], horizontal=True)
-    st.markdown("</div>", unsafe_allow_html=True)
-
-    if menu == "Book Priority Appointment":
-        st.markdown("<div class='glass-card animate-fade-in'>", unsafe_allow_html=True)
-        st.subheader("📝 New Application")
-        st.info("ℹ️ Priority access for online bookings. Walk-ins subject to availability.")
-
+    
+    col_left, col_right = st.columns([1.5, 1])
+    
+    # --- LEFT: APPLICATION FORM ---
+    with col_left:
+        st.markdown("<div class='prof-card'>", unsafe_allow_html=True)
+        st.write("### 📋 Applicant Details")
+        st.markdown("---")
+        
         with st.form("booking_form"):
-            c1, c2 = st.columns(2)
-            with c1:
-                name = st.text_input("Full Name", placeholder="Enter name as per documents")
-                phone = st.text_input("Mobile Number", placeholder="10-digit number", max_chars=10)
+            name = st.text_input("Full Name", placeholder="Enter Full Name as per documents")
+            
+            fc1, fc2 = st.columns(2)
+            with fc1:
+                phone = st.text_input("Mobile Number", placeholder="10-digit Mobile", max_chars=10)
                 age = st.number_input("Age", min_value=1, max_value=120, step=1)
-                
-            with c2:
+            with fc2:
+                gender = st.selectbox("Gender", ["Male", "Female", "Other"])
                 req_type = st.selectbox("Service Type", ["New Enrollment", "Biometric Update", "Demographic Update", "eKYC"])
-                city = st.selectbox("City", ["New Delhi", "Mumbai", "Bengaluru", "Noida", "Ghaziabad", "Gurugram"])
-                pincode = st.text_input("Pincode", max_chars=6)
+
+            st.write("###### 📍 Location Preferences")
+            lc1, lc2 = st.columns(2)
+            with lc1:
+                city = st.selectbox("Select City", ["New Delhi", "Mumbai", "Bengaluru", "Noida", "Ghaziabad", "Gurugram"])
+            with lc2:
+                pincode = st.text_input("Pincode", placeholder="e.g. 110001", max_chars=6)
 
             st.write("")
             submitted = st.form_submit_button("Find & Book Slot")
-
+            
             if submitted:
                 if not name or len(phone)!=10 or not pincode:
-                    st.error("Please fill all details correctly.")
+                    st.error("Please fill all mandatory fields correctly.")
                 else:
-                    with st.spinner("🔄 Analyzing Crowd Density & Allocating Slot..."):
-                        time.sleep(1.5) # Simulate processing
-                        
-                        # Process
+                    with st.spinner("Checking Availability & Reserving Slot..."):
+                        time.sleep(1.5)
                         age_group = "Child (0-18)" if age < 18 else "Adult (18-60)" if age < 60 else "Senior (60+)"
                         payload = {
                             "name": name, "phone": phone, "age": str(age), "age_group": age_group,
@@ -169,203 +195,214 @@ with tab_citizen:
                             "city": city, "pincode": pincode
                         }
                         result = backend.process_request(payload)
-                        
+
                         if result['success']:
                             d = result['data']
-                            st.balloons()
-                            st.success("✅ Appointment Confirmed Successfully!")
-                            
-                            # Digital Ticket UI
+                            st.success("Slot Confirmed!")
                             st.markdown(f"""
-                            <div class='glass-card' style='border-left: 5px solid #4caf50;'>
-                                <div style='display:flex; justify-content:space-between; align-items:center;'>
-                                    <h2>🎫 Digital Token</h2>
-                                    <span class='status-badge status-green'>CONFIRMED</span>
-                                </div>
-                                <hr style='border-color: rgba(255,255,255,0.1);' />
-                                <div style='display: grid; grid-template-columns: 1fr 1fr; gap: 10px;'>
-                                    <div><strong>Request ID:</strong> <code style='color:#d4a017'>{d['request_id']}</code></div>
-                                    <div><strong>Center:</strong> {result['center_name']}</div>
-                                    <div><strong>Date:</strong> {d['assigned_date']}</div>
-                                    <div><strong>Time:</strong> {d['assigned_time_slot']}</div>
-                                </div>
+                            <div class='notification-box'>
+                                ✅ SMS Sent to {phone}: "Your appointment is confirmed at {result['center_name']} for {d['assigned_date']} @ {d['assigned_time_slot']}."
                             </div>
                             """, unsafe_allow_html=True)
                             
-                            # Slip Content
-                            receipt_txt = f"""UIDAI APPOINTMENT SLIP
-----------------------
-Request ID : {d['request_id']}
-Name       : {name}
-Phone      : {phone}
-Center     : {result['center_name']}
-Date       : {d['assigned_date']}
-Time       : {d['assigned_time_slot']}
-Status     : {d['status']}
-----------------------
-Please carry original documents."""
-                            
-                            st.download_button("⬇️ Download Receipt", receipt_txt, file_name=f"Slip_{d['request_id']}.txt")
+                            # Ticket UI
+                            st.info(f"**Request ID:** {d['request_id']} | **Center:** {result['center_name']}")
                         else:
-                            st.error(f"❌ {result['message']}")
+                            st.error(result['message'])
         st.markdown("</div>", unsafe_allow_html=True)
 
-    elif menu == "Track Application Status":
-        st.markdown("<div class='glass-card animate-fade-in'>", unsafe_allow_html=True)
-        st.subheader("🔍 Track Application")
-        
-        c_track1, c_track2 = st.columns([3, 1])
-        with c_track1:
-            req_id_input = st.text_input("Enter Request ID", placeholder="REQ...")
-        with c_track2:
-            st.write("")
-            st.write("")
-            track_btn = st.button("Track Status")
-
-        if track_btn:
-            with st.spinner("Searching Database..."):
-                time.sleep(1)
-                match = backend.dm.requests[backend.dm.requests['request_id'] == req_id_input]
-                
+    # --- RIGHT: TRACKING & INFO ---
+    with col_right:
+        # Track Application
+        st.markdown("<div class='prof-card'>", unsafe_allow_html=True)
+        st.write("### 🔍 Track Application")
+        st.markdown("---")
+        track_id = st.text_input("Enter Request ID (e.g. REQ123...)", key="track_input")
+        if st.button("TRACK STATUS"):
+            match = backend.dm.requests[backend.dm.requests['request_id'] == track_id]
             if not match.empty:
                 rec = match.iloc[0]
-                status_class = "status-green" if "Confirmed" in rec['status'] else "status-orange"
+                status_color = "#2e7d32" if "Confirmed" in rec['status'] else "#ef6c00";
                 st.markdown(f"""
-                <div class='glass-card' style='margin-top: 20px;'>
-                    <div style='display:flex; justify-content:space-between;'>
-                        <h3>{rec['name']}</h3>
-                        <span class='status-badge {status_class}'>{rec['status']}</span>
-                    </div>
-                    <p><strong>Appointment:</strong> {rec['assigned_date']} at {rec['assigned_time_slot']}</p>
-                    <p style='color: #aaa; font-size: 0.9em;'>Center ID: {rec['assigned_center_id']}</p>
+                <div style='background:#f1f8e9; padding:15px; border-radius:8px; border-left:4px solid {status_color}'>
+                    <h4 style='margin:0; color:{status_color}'>{rec['status']}</h4>
+                    <p style='margin:5px 0 0 0;'><strong>Name:</strong> {rec['name']}</p>
+                    <p style='margin:0;'><strong>Date:</strong> {rec['assigned_date']}</p>
+                    <p style='margin:0;'><strong>Center:</strong> {rec['assigned_center_id']}</p>
                 </div>
                 """, unsafe_allow_html=True)
             else:
-                st.error("⚠️ Request ID not found in the system.")
+                st.error("No record found for this ID.")
+        st.markdown("</div>", unsafe_allow_html=True)
+        
+        # Information / Helper
+        st.markdown("<div class='prof-card' style='background:#0b1e47; color:white;'>", unsafe_allow_html=True)
+        st.markdown("<h3 style='color:white !important;'>ℹ️ Required Documents</h3>", unsafe_allow_html=True)
+        st.markdown("""
+        <ul style='padding-left:20px; line-height:1.6;'>
+            <li>POI (Proof of Identity)</li>
+            <li>POA (Proof of Address)</li>
+            <li>POR (Proof of Relationship)</li>
+            <li>DOB (Date of Birth) Proof</li>
+        </ul>
+        <small style='color:#ccc;'>Ensure you carry original copies.</small>
+        """, unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
 
 
-# ================= ADMIN TAB =================
+# ================= ADMIN DASHBOARD =================
 with tab_admin:
     
     if 'admin_logged_in' not in st.session_state:
         st.session_state['admin_logged_in'] = False
         st.session_state['admin_region'] = None
+        st.session_state['admin_pincode'] = None
 
     if not st.session_state['admin_logged_in']:
-        # Login Form
-        col_login1, col_login2, col_login3 = st.columns([1, 2, 1])
-        with col_login2:
-            st.markdown("<div class='glass-card animate-fade-in'>", unsafe_allow_html=True)
-            st.subheader("🔐 Secure Admin Portal")
-            with st.form("admin_login"):
-                u = st.text_input("Username", placeholder="e.g. admin_delhi_110001")
-                p = st.text_input("Password", type="password")
-                btn = st.form_submit_button("Verify & Login")
+        # Professional Login
+        lc1, lc2, lc3 = st.columns([1, 1, 1])
+        with lc2:
+            st.markdown("<div class='prof-card'>", unsafe_allow_html=True)
+            st.write("### 🔐 Admin Secure Login")
+            st.markdown("---")
+            with st.form("admin_verify"):
+                u = st.text_input("Admin ID", placeholder="admin_city_pincode")
+                p = st.text_input("Secure Key", type="password")
+                verify_btn = st.form_submit_button("VERIFY & ACCESS")
                 
-                if btn:
+                if verify_btn:
                     if p == "admin123":
                         parts = u.split('_')
                         if len(parts) >= 3 and parts[0] == 'admin':
-                            # --- SECURITY SIMULATION ---
-                            msg_placeholder = st.empty()
-                            bar = st.progress(0)
+                            city = parts[1].capitalize()
+                            pincode = parts[2]
                             
-                            msg_placeholder.write("🔄 Connecting to UIDAI C-CID Server...")
-                            time.sleep(0.8)
-                            bar.progress(30)
+                            with st.status("Verifying Credentials..."):
+                                st.write("✅ C-CID Handshake...")
+                                time.sleep(0.5)
+                                st.write(f"✅ Retrieving Data for Region: {city} ({pincode})...")
+                                time.sleep(0.8)
+                                st.write("✅ Access Granted.")
+                                time.sleep(0.5)
                             
-                            msg_placeholder.write("🔐 Verifying Admin Credentials...")
-                            time.sleep(0.8)
-                            bar.progress(60)
-                            
-                            msg_placeholder.write("📡 Syncing Regional Data...")
-                            time.sleep(0.8)
-                            bar.progress(100)
-                            time.sleep(0.5)
-                            # ---------------------------
-
                             st.session_state['admin_logged_in'] = True
-                            st.session_state['admin_region'] = parts[1].capitalize()
+                            st.session_state['admin_region'] = city
+                            st.session_state['admin_pincode'] = pincode
                             st.rerun()
                         else:
-                            st.error("Invalid Username Format. Use admin_<city>_<pincode>")
+                            st.error("Invalid Format. Use: admin_<city>_<pincode>")
                     else:
-                        st.error("❌ Access Denied: Invalid Password")
-            st.caption("Demo Access: admin_delhi_110001 / admin123")
+                        st.error("Unauthorized Access.")
+            st.caption("Demo: admin_delhi_110001 (Pass: admin123)")
             st.markdown("</div>", unsafe_allow_html=True)
-
+            
     else:
-        # Dashboard
-        region = st.session_state['admin_region']
+        # LOGGED IN DASHBOARD
+        city = st.session_state['admin_region']
+        pin = st.session_state['admin_pincode']
         
-        st.markdown(f"""
-        <div class='glass-card animate-fade-in' style='display:flex; justify-content:space-between; align-items:center;'>
-            <h2>📊 Regional Dashboard: {region}</h2>
-            <div style='text-align:right;'>
-                <span class='status-badge status-green'>● LIVE</span>
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        if st.button("🔒 Secure Logout", key='logout'):
+        # Header with Logout
+        h1, h2 = st.columns([4, 1])
+        with h1:
+            st.markdown(f"<h2>⚙️ Regional Dashboard: {city} ({pin})</h2>", unsafe_allow_html=True)
+        with h2:
+            if st.button("LOGOUT"):
                 st.session_state['admin_logged_in'] = False
                 st.rerun()
-
-        # Data Filter Logic
+        
+        # --- DATA SCOPING ---
         df = backend.dm.requests.copy()
         df = df.fillna('')
-        df = df[df['input_city'].str.contains(region, case=False)]
         
-        # Metrics
-        m1, m2, m3 = st.columns(3)
+        # STRICT FILTER: Show Only if Pincode matches OR City matches (simulating region scope)
+        # For stricter demo, let's match exact Pincode if available, else City
+        scope_df = df[
+            (df['input_pincode'] == pin) | 
+            (df['input_city'].str.lower() == city.lower())
+        ]
+        
+        # --- TOP METRICS ---
+        st.markdown("<div class='prof-card'>", unsafe_allow_html=True)
+        m1, m2, m3, m4 = st.columns(4)
+        
         with m1:
-            st.markdown(f"<div class='glass-card'><h3 style='margin:0'>{len(df)}</h3><p style='color:#ccc'>Total Requests</p></div>", unsafe_allow_html=True)
+            st.markdown(f"<div class='metric-container'><div class='metric-value'>{len(scope_df)}</div><div class='metric-label'>Total Requests</div></div>", unsafe_allow_html=True)
         with m2:
-            today_count = len(df[df['assigned_date'] == str(datetime.date.today())])
-            st.markdown(f"<div class='glass-card'><h3 style='margin:0'>{today_count}</h3><p style='color:#ccc'>Scheduled Today</p></div>", unsafe_allow_html=True)
+            today_count = len(scope_df[scope_df['assigned_date'] == str(datetime.date.today())])
+            st.markdown(f"<div class='metric-container'><div class='metric-value'>{today_count}</div><div class='metric-label'>Today's Load</div></div>", unsafe_allow_html=True)
         with m3:
-            redirects = len(df[df['status'].str.contains("Rescheduled") | df['status'].str.contains("admin")])
-            st.markdown(f"<div class='glass-card'><h3 style='margin:0'>{redirects}</h3><p style='color:#ccc'>System Interventions</p></div>", unsafe_allow_html=True)
-        
-        # Controls & Table
-        st.markdown("<div class='glass-card animate-fade-in'>", unsafe_allow_html=True)
-        c_filter1, c_filter2 = st.columns(2)
-        with c_filter1:
-            f_age = st.selectbox("Filter by Age Group", ["All", "Child (0-18)", "Adult (18-60)", "Senior (60+)"])
-        with c_filter2:
-            f_status = st.selectbox("Filter by Status", ["All", "Confirmed", "Completed"])
-            
-        if f_age != "All": df = df[df['age_group'] == f_age]
-        if f_status != "All": df = df[df['status'].str.contains(f_status)]
-        
-        st.dataframe(
-            df[['request_id', 'name', 'age_group', 'assigned_date', 'assigned_time_slot', 'status']], 
-            hide_index=True, 
-            use_container_width=True
-        )
+            pending = len(scope_df[scope_df['status'].str.contains("Confirmed")])
+            st.markdown(f"<div class='metric-container'><div class='metric-value' style='color:#f3a12f'>{pending}</div><div class='metric-label'>Pending</div></div>", unsafe_allow_html=True)
+        with m4:
+            completed = len(scope_df[scope_df['status'].str.contains("Completed")])
+            st.markdown(f"<div class='metric-container'><div class='metric-value' style='color:#2e7d32'>{completed}</div><div class='metric-label'>Completed</div></div>", unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
         
-        # Actions
-        st.subheader("⚡ Administrative Actions")
-        act1, act2 = st.columns(2)
+        # --- ADVANCED ANALYTICS TABS ---
+        t_overview, t_demo, t_slots, t_ops = st.tabs(["Overview List", "Demographics", "Slot Usage", "Operations"])
         
-        with act1:
-            st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
-            st.write("### ⚖️ Load Balancing")
-            centers = backend.get_all_centers()
-            target = st.selectbox("Select Center to Offload", centers['center_id'].tolist(), format_func=lambda x: centers[centers['center_id']==x]['name'].values[0])
-            if st.button("Shift Excess Load to Tomorrow"):
-                with st.spinner("Re-calculating Schedules..."):
-                    time.sleep(1)
-                    count = backend.process_admin_redistribution(target)
-                st.success(f"✅ Successfully moved {count} appointments to next available slots.")
+        with t_overview:
+            st.markdown("<div class='prof-card'>", unsafe_allow_html=True)
+            st.write("#### 📜 Applicant Records")
+            
+            # Filters
+            fc1, fc2, fc3 = st.columns(3)
+            with fc1:
+                f_type = st.selectbox("Service Type", ["All"] + list(scope_df['request_type'].unique()))
+            with fc2:
+                f_date = st.date_input("Filter Date", value=None)
+            with fc3:
+                f_stat = st.selectbox("Status", ["All", "Confirmed", "Rescheduled", "Completed"])
+            
+            # Apply Filters
+            view_df = scope_df
+            if f_type != "All": view_df = view_df[view_df['request_type'] == f_type]
+            if f_date: view_df = view_df[view_df['assigned_date'] == str(f_date)]
+            if f_stat != "All": view_df = view_df[view_df['status'].str.contains(f_stat)]
+            
+            st.dataframe(
+                view_df[['request_id', 'name', 'phone', 'age_group', 'request_type', 'assigned_date', 'assigned_time_slot', 'status']],
+                use_container_width=True,
+                hide_index=True
+            )
             st.markdown("</div>", unsafe_allow_html=True)
-                
-        with act2:
-            st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
-            st.write("### 🚨 Emergency Protocols")
-            st.warning("Simulation Tools")
-            if st.button("⚠️ Broadcast Outage Alert"):
-                st.toast("⚠️ SMS Alert: System Outage Notification Broadcasted to all centers!")
+            
+        with t_demo:
+            st.markdown("<div class='prof-card'>", unsafe_allow_html=True)
+            st.write("#### 👥 Age & Service Demographics")
+            
+            # Charts
+            c_chart1, c_chart2 = st.columns(2)
+            with c_chart1:
+                if not scope_df.empty:
+                    df_age = scope_df['age_group'].value_counts().reset_index()
+                    df_age.columns = ['Age Group', 'Count']
+                    st.bar_chart(df_age.set_index('Age Group'))
+                else:
+                    st.info("No data for charts")
+            with c_chart2:
+                if not scope_df.empty:
+                    df_req = scope_df['request_type'].value_counts().reset_index()
+                    df_req.columns = ['Service', 'Count']
+                    st.write("Service Distribution")
+                    st.dataframe(df_req, hide_index=True)
+            st.markdown("</div>", unsafe_allow_html=True)
+
+        with t_ops:
+            st.markdown("<div class='prof-card'>", unsafe_allow_html=True)
+            st.write("#### 📢 Center Operations & Simulation")
+            
+            col_ops1, col_ops2 = st.columns(2)
+            with col_ops1:
+                st.info("⚠️ **Trigger System Outage**")
+                st.write("Simulate a connectivity failure in this region. This will trigger SMS alerts to all scheduled citizens.")
+                if st.button("🚨 TRIGGER OUTAGE & NOTIFY"):
+                    st.toast("⚠️ SMS BROADCASTED: 'System Outage at Center. Please wait for reschedule.'")
+                    st.error("System status set to: OFFLINE")
+            
+            with col_ops2:
+                 st.success("📨 **Manual SMS Push**")
+                 st.write("Send manual reminders for tomorrow's appointments.")
+                 if st.button("📤 SEND REMINDERS"):
+                     st.toast("✅ 24 SMS Reminders Sent Successfully.")
             st.markdown("</div>", unsafe_allow_html=True)
