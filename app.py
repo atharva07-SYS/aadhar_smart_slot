@@ -1,189 +1,239 @@
 import streamlit as st
 import pandas as pd
 import time
+import datetime
 from src.backend import CrowdSystemBackend
 
-# Configure Page
+# --- CONFIG ---
 st.set_page_config(
-    page_title="UIDAI | Aadhaar Seva Kendra",
+    page_title="UIDAI | Aadhaar Service Portal",
     page_icon="🇮🇳",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="collapsed"
 )
 
-# Custom CSS for Government Look
+# --- CUSTOM CSS ---
 st.markdown("""
     <style>
     .main_header {
-        font-family: 'Arial', sans-serif;
-        color: #003366;
+        font-family: 'Outfit', sans-serif;
+        color: #0b1e47;
         text-align: center;
         padding-bottom: 20px;
-        border-bottom: 2px solid #e0e0e0;
+        border-bottom: 2px solid #d4a017;
         margin-bottom: 30px;
     }
     .stButton>button {
-        background-color: #28a745;
+        background-color: #0b1e47;
         color: white;
+        border-radius: 8px;
+        height: 45px;
+        font-weight: 600;
+        width: 100%;
+    }
+    .stButton>button:hover {
+        background-color: #d4a017;
+        color: white;
+    }
+    .status-badge {
+        padding: 5px 10px;
         border-radius: 5px;
-        height: 50px;
-        font-size: 18px;
-    }
-    .info-box {
-        background-color: #e8f4f8;
-        padding: 20px;
-        border-radius: 10px;
-        border-left: 5px solid #0056b3;
-    }
-    .highlight {
         font-weight: bold;
-        color: #003366;
     }
+    .status-confirm { background-color: #e8f5e9; color: #1b5e20; }
+    .status-pending { background-color: #fff3e0; color: #e65100; }
     </style>
 """, unsafe_allow_html=True)
 
+# --- BACKEND ---
 @st.cache_resource
 def get_backend():
     return CrowdSystemBackend()
 
 backend = get_backend()
 
-# Header
+# --- HEADER ---
 col1, col2, col3 = st.columns([1, 6, 1])
 with col2:
     st.markdown("<h1 class='main_header'>UIDAI Aadhaar Appointment & Crowd Management System</h1>", unsafe_allow_html=True)
 
-# Sidebar Navigation
-with st.sidebar:
-    st.image("https://upload.wikimedia.org/wikipedia/en/thumb/c/cf/Aadhaar_Logo.svg/1200px-Aadhaar_Logo.svg.png", width=120)
-    st.markdown("### Official Portal")
-    menu = st.radio("Navigate", ["Citizen Services", "Admin Dashboard"])
-    
-    st.markdown("---")
-    st.markdown("### System Status")
-    st.info("System Online\nLoad Auto-Balancing: ACTIVE")
-    
-    if st.button("Reset System Data"):
-        backend.dm.reset_daily_data()
-        st.success("Data Reset Complete")
+# --- TABS ---
+tab_citizen, tab_admin = st.tabs(["👤 Citizen Services", "🔒 Admin Console"])
 
-# --- CITIZEN SERVICES ---
-if menu == "Citizen Services":
-    st.markdown("### 📝 Book an Appointment")
-    st.write("Please provide your location details. The system will automatically check crowd density and assign the best available center and time slot.")
+# ================= CITIZEN TAB =================
+with tab_citizen:
+    menu = st.radio("Select Action", ["Book Appointment", "Track Status"], horizontal=True)
     
-    with st.container():
-        col_form, col_info = st.columns([1, 1])
-        
-        with col_form:
-            with st.form("citizen_form"):
-                request_type = st.selectbox("Select Service Type", 
-                    ["New Enrollment", "Biometric Update", "Demographic Update", "eKYC"])
+    st.divider()
+
+    if menu == "Book Appointment":
+        st.subheader("📝 Book a Priority Appointment")
+        st.info("Walk-ins are accepted, but online booking guarantees your slot.")
+
+        with st.form("booking_form"):
+            c1, c2 = st.columns(2)
+            with c1:
+                name = st.text_input("Full Name", placeholder="As per documents")
+                phone = st.text_input("Mobile Number", placeholder="10-digit number", max_chars=10)
+                age = st.number_input("Age", min_value=1, max_value=120, step=1)
                 
-                user_type = st.radio("Application Category", ["Scheduled", "Walk-in"])
-                
-                city = st.selectbox("Select City", ["New Delhi", "Mumbai", "Bengaluru", "Noida", "Ghaziabad", "Gurugram"])
-                pincode = st.text_input("Enter Pincode", max_chars=6, help="e.g. 110001")
-                
-                submitted = st.form_submit_button("Find & Book Slot")
-                
-        with col_info:
+            with c2:
+                req_type = st.selectbox("Service Type", ["New Enrollment", "Biometric Update", "Demographic Update", "eKYC"])
+                city = st.selectbox("City", ["New Delhi", "Mumbai", "Bengaluru", "Noida", "Ghaziabad", "Gurugram"])
+                pincode = st.text_input("Pincode", max_chars=6)
+
+            submitted = st.form_submit_button("Find & Book Slot")
+
             if submitted:
-                if not pincode or len(pincode) != 6:
-                    st.error("Please enter a valid 6-digit Pincode.")
+                if not name or len(phone)!=10 or not pincode:
+                    st.error("Please fill all details correctly.")
                 else:
-                    with st.spinner("Analyzing Crowd Density & Finding Best Slot..."):
-                        time.sleep(1) # Simulated delay for "processing"
-                        
-                        user_details = {
-                            "request_type": request_type,
-                            "user_type": user_type,
-                            "city": city,
-                            "pincode": pincode
+                    with st.spinner("Analyzing Crowd Density..."):
+                        time.sleep(1)
+                        # Process
+                        age_group = "Child (0-18)" if age < 18 else "Adult (18-60)" if age < 60 else "Senior (60+)"
+                        payload = {
+                            "name": name, "phone": phone, "age": str(age), "age_group": age_group,
+                            "request_type": req_type, "user_type": "Scheduled", # Hidden/Default
+                            "city": city, "pincode": pincode
                         }
-                        
-                        result = backend.process_request(user_details)
+                        result = backend.process_request(payload)
                         
                         if result['success']:
-                            # Success Card
-                            data = result['data']
-                            st.balloons()
-                            st.markdown(f"""
-                            <div class='info-box'>
-                                <h3>✅ Appointment Confirmed</h3>
-                                <p><b>Request ID:</b> {data['request_id']}</p>
-                                <p><b>Assigned Center:</b> <span class='highlight'>{result['center_name']}</span></p>
-                                <hr>
-                                <h4>📅 {data['assigned_date']} &nbsp;&nbsp; ⏰ {data['assigned_time_slot']}</h4>
-                                <hr>
-                                <p><i>{result['message']}</i></p>
-                                <p><b>Status:</b> {data['status']}</p>
-                            </div>
-                            """, unsafe_allow_html=True)
+                            d = result['data']
+                            st.success("Appointment Confirmed!")
+                            
+                            # Receipt Card
+                            with st.container():
+                                st.markdown(f"""
+                                ### ✅ Booking Summary
+                                **Request ID:** `{d['request_id']}`  
+                                **Center:** {result['center_name']}  
+                                **Date:** {d['assigned_date']} | **Time:** {d['assigned_time_slot']}
+                                """)
+                                
+                                # Receipt Text
+                                receipt_txt = f"""UIDAI APPOINTMENT SLIP
+----------------------
+Request ID : {d['request_id']}
+Name       : {name}
+Phone      : {phone}
+Center     : {result['center_name']}
+Date       : {d['assigned_date']}
+Time       : {d['assigned_time_slot']}
+Status     : {d['status']}
+----------------------
+Please carry original documents."""
+                                
+                                st.download_button("⬇️ Download Slip", receipt_txt, file_name=f"Slip_{d['request_id']}.txt")
+                                st.toast(f"SMS Sent to {phone}")
+
                         else:
                             st.error(result['message'])
-            else:
-                st.markdown("""
-                <div class='info-box'>
-                <h4>Instructions</h4>
-                <ol>
-                <li>Select the service you need.</li>
-                <li>Enter your current City and Pincode.</li>
-                <li>The AI System will allocate the guaranteed slot.</li>
-                </ol>
-                <p><b>Note:</b> Walk-ins are accepted but priority is given to scheduled slots.</p>
+
+    elif menu == "Track Status":
+        st.subheader("🔍 Track Application")
+        req_id_input = st.text_input("Enter Request ID (e.g. REQ...)")
+        if st.button("Track"):
+            match = backend.dm.requests[backend.dm.requests['request_id'] == req_id_input]
+            if not match.empty:
+                rec = match.iloc[0]
+                box_color = "green" if "Confirmed" in rec['status'] else "orange"
+                st.markdown(f"""
+                <div style="padding: 20px; border: 1px solid #ddd; border-radius: 10px; border-left: 5px solid {box_color};">
+                    <h3>{rec['name']}</h3>
+                    <p><strong>Status:</strong> {rec['status']}</p>
+                    <p><strong>Date:</strong> {rec['assigned_date']} @ {rec['assigned_time_slot']}</p>
+                    <p><small>Center ID: {rec['assigned_center_id']}</small></p>
                 </div>
                 """, unsafe_allow_html=True)
+            else:
+                st.error("Request ID not found.")
 
-# --- ADMIN DASHBOARD ---
-if menu == "Admin Dashboard":
-    st.markdown("### 📊 Real-time Crowd Control Dashboard")
-    
-    # Metrics
-    req_df = backend.dm.requests
-    total_req = len(req_df)
-    today_req = len(req_df[req_df['assigned_date'] == str(datetime.date.today())])
-    overload_redirects = len(req_df[req_df['status'].str.contains("Rescheduled") | req_df['status'].str.contains("De-congested")])
-    
-    m1, m2, m3 = st.columns(3)
-    m1.metric("Total Requests", total_req)
-    m2.metric("Today's Appointments", today_req)
-    m3.metric("System-Driven Redirects", overload_redirects, delta_color="inverse")
-    
-    st.divider()
-    
-    col_a, col_b = st.columns([2, 1])
-    
-    with col_a:
-        st.subheader("Live Load by City")
-        if not req_df.empty:
-            city_counts = req_df['input_city'].value_counts()
-            st.bar_chart(city_counts)
-        else:
-            st.info("No data yet.")
-            
-    with col_b:
-        st.subheader("Center Health")
-        centers = backend.get_all_centers()
-        st.dataframe(centers[["name", "city", "capacity_per_hour"]], hide_index=True)
 
-    st.divider()
-    st.subheader("🚨 Crowd Control Actions")
+# ================= ADMIN TAB =================
+with tab_admin:
     
-    c1, c2 = st.columns(2)
-    with c1:
-        st.markdown("**Load Redistribution**")
-        target_center = st.selectbox("Select Center to De-congest", centers['center_id'].tolist(), format_func=lambda x: centers[centers['center_id']==x]['name'].values[0])
-        if st.button("Shift Excess Load to Next Day"):
-            count = backend.process_admin_redistribution(target_center)
-            st.warning(f"ACTION COMPLETE: {count} appointments shifted to tomorrow.")
+    # Init Session State
+    if 'admin_logged_in' not in st.session_state:
+        st.session_state['admin_logged_in'] = False
+        st.session_state['admin_region'] = None
+
+    if not st.session_state['admin_logged_in']:
+        # Login Form
+        st.subheader("🔑 Secure Admin Login")
+        with st.form("admin_login"):
+            u = st.text_input("Username", placeholder="e.g. admin_delhi_110001")
+            p = st.text_input("Password", type="password")
+            btn = st.form_submit_button("Login")
             
-    with c2:
-        st.markdown("**Simulate Failure**")
-        if st.button("TRIGGER NETWORK OUTAGE (Simulated)"):
-            st.error("NETWORK FAILURE LOGGED. Automated SMS sent to all affected users.")
+            if btn:
+                if p == "admin123":
+                    parts = u.split('_')
+                    if len(parts) >= 3 and parts[0] == 'admin':
+                        st.session_state['admin_logged_in'] = True
+                        st.session_state['admin_region'] = parts[1].capitalize()
+                        st.rerun()
+                    else:
+                        st.error("Invalid Username Format. Use admin_<city>_<pincode>")
+                else:
+                    st.error("Invalid Password")
+        st.caption("Demo: admin_delhi_110001 / admin123")
+
+    else:
+        # Dashboard
+        region = st.session_state['admin_region']
+        st.subheader(f"📊 Dashboard - Region: {region}")
+        
+        if st.button("Logout"):
+            st.session_state['admin_logged_in'] = False
+            st.rerun()
+
+        # Data Filter Logic
+        df = backend.dm.requests.copy()
+        df = df.fillna('')
+        
+        # Region Filter
+        df = df[df['input_city'].str.contains(region, case=False)]
+        
+        # Metrics
+        m1, m2, m3 = st.columns(3)
+        m1.metric("Total Requests", len(df))
+        today_df = df[df['assigned_date'] == str(datetime.date.today())]
+        m2.metric("Scheduled Today", len(today_df))
+        redirects = len(df[df['status'].str.contains("Rescheduled") | df['status'].str.contains("admin")])
+        m3.metric("System Actions", redirects)
+        
+        st.divider()
+        
+        # Filters & Table
+        c_filter1, c_filter2 = st.columns(2)
+        with c_filter1:
+            f_age = st.selectbox("Filter Age Group", ["All", "Child (0-18)", "Adult (18-60)", "Senior (60+)"])
+        with c_filter2:
+            f_status = st.selectbox("Filter Status", ["All", "Confirmed", "Completed"])
             
-    st.divider()
-    st.subheader("Recent System Logs")
-    if not req_df.empty:
-        st.dataframe(req_df.sort_values(by="timestamp", ascending=False).head(10))
+        if f_age != "All": df = df[df['age_group'] == f_age]
+        if f_status != "All": df = df[df['status'].str.contains(f_status)]
+        
+        st.dataframe(df[['request_id', 'name', 'age_group', 'assigned_date', 'assigned_time_slot', 'status']], hide_index=True, use_container_width=True)
+        
+        st.divider()
+        
+        # Actions
+        st.subheader("⚡ Quick Actions")
+        act1, act2 = st.columns(2)
+        
+        with act1:
+            centers = backend.get_all_centers()
+            # Filter dropdown if needed, but for redistribution we might want all
+            target = st.selectbox("Redistribute Load From", centers['center_id'].tolist(), format_func=lambda x: centers[centers['center_id']==x]['name'].values[0])
+            if st.button("Shift Excess Load"):
+                count = backend.process_admin_redistribution(target)
+                st.success(f"{count} appointments moved to tomorrow.")
+                
+        with act2:
+            st.warning("Simulation Tools")
+            if st.button("Trigger Outage Alert"):
+                st.toast("⚠️ SMS Alert Broadcasted to all centers!")
+

@@ -112,7 +112,11 @@ class CrowdSystemBackend:
                 "assigned_center_id": center_id,
                 "assigned_date": str(assigned_date),
                 "assigned_time_slot": f"{assigned_hour:02d}:00",
-                "timestamp": str(get_current_time())
+                "timestamp": str(get_current_time()),
+                "name": user_details.get("name", ""),
+                "phone": user_details.get("phone", ""),
+                "age": user_details.get("age", ""),
+                "age_group": user_details.get("age_group", "")
             }
             self.dm.add_request(req_data)
             
